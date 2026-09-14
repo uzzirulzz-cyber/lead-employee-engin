@@ -1,0 +1,24 @@
+
+{
+  "name": "playbeat-leadpulse-v3",
+  "version": "3.0.0",
+  "description": "PLAYBEAT LEADPULSE - Super Admin + Seats + Lead Router + Calling + Email + WhatsApp",
+  "main": "src/server.js",
+  "scripts": { "dev": "nodemon src/server.js", "start": "node src/server.js", "worker": "node src/worker.js", "migrate": "prisma migrate dev" },
+  "dependencies": {
+    "@prisma/client": "^5.14.0",
+    "axios": "^1.7.2",
+    "bcryptjs": "^2.4.3",
+    "cheerio": "^1.0.0-rc.12",
+    "cors": "^2.8.5",
+    "csv-stringify": "^6.4.6",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2",
+    "nodemailer": "^6.9.13",
+    "p-limit": "^4.0.0",
+    "prisma": "^5.14.0",
+    "socket.io": "^4.7.2",
+    "twilio": "^5.0.0",
+    "node-cron": "^3.0.3"
+  }
+}

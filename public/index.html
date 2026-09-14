@@ -1,0 +1,185 @@
+
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>LeadForge v2 SOLID - 1000+ Leads + Email & WhatsApp Outreach</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body class="bg-zinc-50 text-zinc-900">
+<div class="flex min-h-screen">
+<aside class="w-64 bg-zinc-900 text-white p-4 space-y-6">
+<div class="font-bold text-xl"><i class="fa-solid fa-bolt text-yellow-400"></i> LeadForge v2</div>
+<div class="text-xs opacity-50">SOLID ARCHITECTURE</div>
+<nav class="space-y-1 text-sm">
+<div class="opacity-50 text-xs mt-4">OVERVIEW</div>
+<a href="#dashboard" onclick="showTab('dashboard')" class="block py-2 px-2 rounded hover:bg-zinc-800"><i class="fa-solid fa-chart-line mr-2"></i>Dashboard</a>
+<a href="#campaigns" onclick="showTab('campaigns')" class="block py-2 px-2 rounded hover:bg-zinc-800"><i class="fa-solid fa-bullseye mr-2"></i>Campaigns</a>
+<div class="opacity-50 text-xs mt-4">LEADS</div>
+<a href="#leads" onclick="showTab('leads')" class="block py-2 px-2 rounded hover:bg-zinc-800"><i class="fa-solid fa-database mr-2"></i>All Leads</a>
+<a href="#" onclick="showTab('verified')" class="block py-2 px-2 rounded hover:bg-zinc-800"><i class="fa-solid fa-circle-check mr-2 text-green-400"></i>Verified</a>
+<div class="opacity-50 text-xs mt-4">OUTREACH - NEW</div>
+<a href="#outreach" onclick="showTab('outreach')" class="block py-2 px-2 rounded bg-zinc-800 text-yellow-300"><i class="fa-solid fa-paper-plane mr-2"></i>Email Outreach</a>
+<a href="#whatsapp" onclick="showTab('whatsapp')" class="block py-2 px-2 rounded hover:bg-zinc-800"><i class="fa-brands fa-whatsapp mr-2 text-green-400"></i>WhatsApp Center</a>
+<a href="#templates" onclick="showTab('templates')" class="block py-2 px-2 rounded hover:bg-zinc-800"><i class="fa-solid fa-file-lines mr-2"></i>Templates</a>
+<a href="#logs" onclick="showTab('logs')" class="block py-2 px-2 rounded hover:bg-zinc-800"><i class="fa-solid fa-clock-rotate-left mr-2"></i>Activity Logs</a>
+</nav>
+<div class="pt-10 text-xs opacity-40">FREE • No paid API • 1000+ per run • Multi-source + Enrichment</div>
+</aside>
+
+<main class="flex-1 p-6 space-y-6">
+
+<!-- DASHBOARD TAB -->
+<div id="tab-dashboard" class="space-y-6">
+<h1 class="text-2xl font-bold">Solid Lead Engine — Dashboard</h1>
+<div id="stats" class="grid grid-cols-5 gap-4"></div>
+<div class="grid md:grid-cols-2 gap-6">
+<div class="bg-white border rounded-xl p-4"><h3 class="font-bold mb-2">Enhanced Discovery Architecture</h3><div class="text-xs space-y-1 opacity-70"><div>1. OSM Overpass multi-tag (estate_agent, office, shop, amenity) x 4 variants</div><div>2. Keyword expansion + Nominatim city centroid + 10km radius search</div><div>3. Contact-page crawler: /contact, /about → extracts hidden emails</div><div>4. Batch 50, concurrency 5, persists after each batch</div><div>5. Loops until 1000 valid or SOURCE_EXHAUSTED</div></div><div class="mt-3 w-full h-2 bg-zinc-200 rounded"><div class="h-2 bg-black rounded" style="width:74%"></div></div><div class="text-xs mt-1">743 / 1000 Real Estate Pakistan</div></div>
+<div class="bg-white border rounded-xl p-4"><h3 class="font-bold mb-3">Active Campaigns</h3><div id="campaigns-mini"></div></div>
+</div>
+</div>
+
+<!-- CAMPAIGNS TAB -->
+<div id="tab-campaigns" class="hidden space-y-4">
+<div class="flex justify-between"><h1 class="text-2xl font-bold">Campaigns</h1><button onclick="document.getElementById('newCamp').classList.toggle('hidden')" class="px-4 py-2 bg-black text-white rounded">+ New Campaign</button></div>
+<div id="newCamp" class="hidden bg-white border rounded-xl p-4 space-y-2">
+<input id="name" class="w-full border p-2 rounded" placeholder="Pakistan Real Estate 1000">
+<div class="grid grid-cols-3 gap-2"><input id="industry" class="border p-2 rounded" value="Real Estate"><input id="country" class="border p-2 rounded" value="Pakistan"><input id="city" class="border p-2 rounded" placeholder="Karachi"></div>
+<div class="grid grid-cols-2 gap-2"><input id="target" type="number" class="border p-2 rounded" value="1000"><input id="keywords" class="border p-2 rounded" placeholder="keywords comma separated"></div>
+<button onclick="createCampaign()" class="px-6 py-2 bg-black text-white rounded">Create</button>
+</div>
+<div id="campaigns" class="space-y-2"></div>
+</div>
+
+<!-- LEADS TAB -->
+<div id="tab-leads" class="hidden space-y-4">
+<h1 class="text-2xl font-bold">All Leads — Solid & Scored</h1>
+<div class="bg-white border rounded-xl p-4">
+<div class="flex gap-2 mb-3 flex-wrap">
+<input id="search" placeholder="Search company/email/domain" class="border p-2 rounded w-64" oninput="loadLeads()">
+<select id="minScore" class="border p-2 rounded" onchange="loadLeads()"><option value="">Any Score</option><option value="75">High 75+</option><option value="90">Excellent 90+</option></select>
+<label class="flex items-center gap-1 text-sm"><input type="checkbox" id="hasEmail" onchange="loadLeads()"> Email</label>
+<label class="flex items-center gap-1 text-sm"><input type="checkbox" id="hasWhatsApp" onchange="loadLeads()"> WhatsApp</label>
+<button onclick="exportCSV()" class="ml-auto px-3 py-1 border rounded">Export CSV</button>
+<button onclick="bulkSelect()" class="px-3 py-1 bg-black text-white rounded">Select All for Outreach</button>
+</div>
+<div class="overflow-auto"><table class="w-full text-sm"><thead class="bg-zinc-50"><tr><th class="p-2"><input type="checkbox" id="selectAll" onchange="toggleAll(this)"></th><th class="p-2 text-left">Score</th><th class="p-2 text-left">Company</th><th>Email</th><th>Phone</th><th>WhatsApp</th><th>City</th><th>Actions</th></tr></thead><tbody id="leads"></tbody></table></div>
+</div>
+</div>
+
+<!-- OUTREACH EMAIL TAB -->
+<div id="tab-outreach" class="space-y-4">
+<h1 class="text-2xl font-bold"><i class="fa-solid fa-paper-plane"></i> Email Outreach Center — Inside Dashboard</h1>
+<div class="grid md:grid-cols-3 gap-6">
+<div class="bg-white border rounded-xl p-4 space-y-3">
+<h3 class="font-bold">SMTP Status</h3><div id="smtpStatus" class="text-xs p-2 bg-zinc-100 rounded">Checking...</div>
+<div class="text-xs opacity-60">Set SMTP_USER + SMTP_PASS in .env (Gmail App Password free). No paid service.</div>
+<h3 class="font-bold mt-4">Compose Email</h3>
+<input id="emailSubject" class="w-full border p-2 rounded" placeholder="Subject: Quick proposal for {{companyName}} in {{city}}">
+<textarea id="emailBody" class="w-full border p-2 rounded h-40" placeholder="Hi {{companyName}},
+
+Found your business in {{city}}... We help {{industry}}...">Hi {{companyName}},
+
+I came across your business in {{city}} and loved what you're doing in {{industry}}.
+
+We help businesses like yours get more clients via...
+
+Would you be open to a quick 10-min chat?
+
+Best,
+Your Name
+{{website}}</textarea>
+<div class="text-xs opacity-60">Variables: {{companyName}} {{city}} {{country}} {{industry}} {{website}} {{email}}</div>
+<button onclick="sendBulkEmail()" class="w-full bg-black text-white py-2 rounded"><i class="fa-solid fa-paper-plane mr-2"></i>Send to Selected Leads (<span id="selectedCount">0</span>)</button>
+<button onclick="sendSingleEmail()" class="w-full border py-2 rounded">Send Test to First Selected</button>
+</div>
+
+<div class="md:col-span-2 bg-white border rounded-xl p-4">
+<h3 class="font-bold mb-3">Email Templates</h3>
+<div class="flex gap-2 mb-3"><input id="tName" placeholder="Template name" class="border p-2 rounded"><input id="tSubject" placeholder="Subject" class="border p-2 rounded flex-1"><button onclick="saveEmailTemplate()" class="px-3 py-1 bg-zinc-900 text-white rounded">Save Current as Template</button></div>
+<div id="emailTemplates" class="space-y-2 mb-6"></div>
+
+<h3 class="font-bold mb-3">Recent Email Logs</h3><div id="emailLogs" class="text-sm space-y-1 max-h-96 overflow-auto"></div>
+</div>
+</div>
+</div>
+
+<!-- WHATSAPP TAB -->
+<div id="tab-whatsapp" class="hidden space-y-4">
+<h1 class="text-2xl font-bold"><i class="fa-brands fa-whatsapp text-green-500"></i> WhatsApp Contact Center</h1>
+<div class="bg-yellow-50 border border-yellow-200 p-3 rounded text-xs">Compliant: Generates official wa.me links with pre-filled message. No unofficial API, no spam automation. User clicks to open WhatsApp Web/App and sends manually — respects WhatsApp ToS.</div>
+<div class="grid md:grid-cols-3 gap-6">
+<div class="bg-white border rounded-xl p-4 space-y-3">
+<h3 class="font-bold">WhatsApp Message</h3>
+<textarea id="waMessage" class="w-full border p-2 rounded h-32">Hi {{companyName}}! I saw your business in {{city}} - we help {{industry}} businesses get more leads. Open to a quick chat?</textarea>
+<div class="text-xs opacity-60">Variables: {{companyName}} {{city}} {{industry}}</div>
+<button onclick="generateWhatsAppLinks()" class="w-full bg-green-600 text-white py-2 rounded"><i class="fa-brands fa-whatsapp mr-2"></i>Generate wa.me Links for Selected (<span id="selectedCountWa">0</span>)</button>
+</div>
+<div class="md:col-span-2 bg-white border rounded-xl p-4">
+<h3 class="font-bold mb-3">Generated WhatsApp Links — Click to Contact</h3>
+<div id="waResults" class="space-y-2"></div>
+<h3 class="font-bold mt-6 mb-3">WhatsApp Templates</h3>
+<div id="waTemplates" class="space-y-2"></div>
+</div>
+</div>
+</div>
+
+<!-- TEMPLATES TAB -->
+<div id="tab-templates" class="hidden"><h1 class="text-2xl font-bold">Templates</h1><div class="bg-white border rounded-xl p-4">Manage email + WhatsApp templates in respective tabs.</div></div>
+<div id="tab-logs" class="hidden"><h1 class="text-2xl font-bold">Activity Logs</h1><div id="allLogs" class="bg-white border rounded-xl p-4 space-y-1 text-sm"></div></div>
+<div id="tab-verified" class="hidden"><h1 class="text-2xl font-bold">Verified Leads</h1><div class="bg-white border rounded-xl p-4 text-sm opacity-60">Filter: Has Email VALID + Score 75+ — use All Leads tab with filters.</div></div>
+
+</main>
+</div>
+
+<script>
+let selectedLeads=new Set();
+function showTab(name){
+  document.querySelectorAll('[id^=tab-]').forEach(el=>el.classList.add('hidden'));
+  document.getElementById('tab-'+name).classList.remove('hidden');
+  if(name==='leads') loadLeads();
+  if(name==='outreach'){ loadEmailTemplates(); loadLogs('EMAIL'); checkSMTP(); }
+  if(name==='whatsapp'){ loadWaTemplates(); }
+  if(name==='logs') loadAllLogs();
+}
+async function loadStats(){
+  const r=await fetch('/api/stats'); const j=await r.json();
+  document.getElementById('stats').innerHTML=`<div class="bg-white border rounded-xl p-4"><div class="text-xs opacity-60">Total Leads</div><div class="text-2xl font-bold">${j.data.total}</div><div class="text-xs text-green-600">+${j.data.today} today</div></div><div class="bg-white border rounded-xl p-4"><div class="text-xs opacity-60">Verified Emails</div><div class="text-2xl font-bold">${j.data.verified}</div></div><div class="bg-white border rounded-xl p-4"><div class="text-xs opacity-60">WhatsApp</div><div class="text-2xl font-bold">${j.data.whatsapp}</div></div><div class="bg-white border rounded-xl p-4"><div class="text-xs opacity-60">Phone Contacts</div><div class="text-2xl font-bold">${j.data.phone}</div></div><div class="bg-white border rounded-xl p-4 bg-zinc-900 text-white"><div class="text-xs opacity-60">Solid Engine</div><div class="text-lg font-bold">Multi-source + Enrichment</div><div class="text-xs">OSM x 4 tags + Nominatim + Contact Crawl</div></div>`;
+}
+async function loadCampaigns(){
+  const r=await fetch('/api/campaigns'); const j=await r.json();
+  document.getElementById('campaigns').innerHTML=j.data.map(c=>`<div class="bg-white border rounded-xl p-4 flex justify-between"><div><div class="font-bold">${c.name}</div><div class="text-xs opacity-60">${c.industry} • ${c.country} ${c.city||''} • Target ${c.targetCount}</div><div class="mt-2 w-64 h-2 bg-zinc-200 rounded"><div class="h-2 bg-black rounded" style="width:${Math.min(100,(c.progress/c.targetCount)*100)}%"></div></div><div class="text-xs">${c.progress} / ${c.targetCount} — ${c.status} — ${c.currentStage}</div></div><div><button onclick="startCampaign('${c.id}')" class="px-3 py-1 bg-black text-white rounded text-sm">Start Run</button></div></div>`).join('');
+  document.getElementById('campaigns-mini').innerHTML=j.data.slice(0,3).map(c=>`<div class="flex justify-between py-2 border-b text-sm"><span>${c.name}</span><span>${c.progress}/${c.targetCount} ${c.status}</span></div>`).join('');
+}
+async function loadLeads(){
+  const search=document.getElementById('search')?.value||'';
+  const hasEmail=document.getElementById('hasEmail')?.checked||false;
+  const hasWhatsApp=document.getElementById('hasWhatsApp')?.checked||false;
+  const minScore=document.getElementById('minScore')?.value||'';
+  const r=await fetch(`/api/leads?search=${search}&hasEmail=${hasEmail}&hasWhatsApp=${hasWhatsApp}&minScore=${minScore}&limit=100`);
+  const j=await r.json();
+  document.getElementById('leads').innerHTML=j.data.leads.map(l=>`<tr class="border-t hover:bg-zinc-50"><td class="p-2"><input type="checkbox" ${selectedLeads.has(l.id)?'checked':''} onchange="toggleSelect('${l.id}')"></td><td class="p-2"><span class="px-2 py-1 rounded text-xs ${l.leadScore>=90?'bg-green-100 text-green-700': l.leadScore>=75?'bg-blue-100 text-blue-700':'bg-zinc-100'}">${l.leadScore}</span></td><td class="p-2"><div class="font-medium">${l.companyName||l.domain||'Unknown'}</div><div class="text-xs opacity-60">${l.domain||''}</div></td><td class="p-2">${l.email||''}<div class="text-xs ${l.emailStatus==='VALID'?'text-green-600':''}">${l.emailStatus||''}</div></td><td class="p-2">${l.phoneNormalized||''}</td><td class="p-2">${l.whatsappDetected?`<a href="${l.whatsappUrl||`https://wa.me/${(l.whatsappNormalized||'').replace(/\D/g,'')}`}" target="_blank" class="text-green-600"><i class="fa-brands fa-whatsapp"></i> ${l.whatsappNormalized||'Open'}</a>`:''}</td><td class="p-2">${l.city||''}</td><td class="p-2"><button onclick="quickEmail('${l.id}')" class="text-xs px-2 py-1 border rounded">Email</button> <button onclick="quickWhatsApp('${l.id}')" class="text-xs px-2 py-1 border rounded">WA</button></td></tr>`).join('');
+}
+function toggleSelect(id){ if(selectedLeads.has(id)) selectedLeads.delete(id); else selectedLeads.add(id); updateCounts(); }
+function toggleAll(el){ document.querySelectorAll('#leads input[type=checkbox]').forEach(cb=>{ cb.checked=el.checked; const id=cb.getAttribute('onchange')?.match(/'([^']+)'/)?.[1]; if(id){ if(el.checked) selectedLeads.add(id); else selectedLeads.delete(id); }}); updateCounts(); }
+function updateCounts(){ document.getElementById('selectedCount').innerText=selectedLeads.size; document.getElementById('selectedCountWa').innerText=selectedLeads.size; }
+function bulkSelect(){ document.querySelectorAll('#leads input[type=checkbox]').forEach(cb=>{ cb.checked=true; const id=cb.getAttribute('onchange')?.match(/'([^']+)'/)?.[1]; if(id) selectedLeads.add(id); }); updateCounts(); }
+async function createCampaign(){ const body={ name:document.getElementById('name').value, industry:document.getElementById('industry').value, country:document.getElementById('country').value, city:document.getElementById('city').value, targetCount:parseInt(document.getElementById('target').value), keywords:document.getElementById('keywords').value.split(',').map(s=>s.trim()).filter(Boolean) }; const r=await fetch('/api/campaigns',{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)}); const j=await r.json(); if(j.success) loadCampaigns(); }
+async function startCampaign(id){ const r=await fetch(`/api/campaigns/${id}/start`,{ method:'POST'}); const j=await r.json(); alert(j.data.message); loadCampaigns(); }
+async function exportCSV(){ const res=await fetch('/api/leads/export',{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ format:'csv'})}); const blob=await res.blob(); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='leads.csv'; a.click(); }
+
+async function checkSMTP(){ const r=await fetch('/api/smtp/status'); const j=await r.json(); document.getElementById('smtpStatus').innerHTML=j.data.configured?`<span class="text-green-600"><i class="fa-solid fa-check"></i> SMTP configured as ${j.data.user}</span>`:`<span class="text-red-600">Not configured — add SMTP_USER + SMTP_PASS to .env (Gmail App Password free)</span>`; }
+async function saveEmailTemplate(){ const name=document.getElementById('tName').value||'My Template'; const subject=document.getElementById('emailSubject').value; const body=document.getElementById('emailBody').value; const r=await fetch('/api/templates/email',{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ name, subject, body, variables:['companyName','city']})}); loadEmailTemplates(); }
+async function loadEmailTemplates(){ const r=await fetch('/api/templates/email'); const j=await r.json(); document.getElementById('emailTemplates').innerHTML=j.data.map(t=>`<div class="border p-2 rounded flex justify-between"><div><div class="font-medium text-sm">${t.name}</div><div class="text-xs opacity-60">${t.subject}</div></div><button onclick="useTemplate('${t.id}')" class="text-xs px-2 py-1 border rounded">Use</button></div>`).join(''); }
+async function useTemplate(id){ const r=await fetch('/api/templates/email'); const j=await r.json(); const t=j.data.find(x=>x.id===id); if(t){ document.getElementById('emailSubject').value=t.subject; document.getElementById('emailBody').value=t.body; } }
+async function sendSingleEmail(){ const leadId=Array.from(selectedLeads)[0]; if(!leadId) return alert('Select a lead'); const subject=document.getElementById('emailSubject').value; const body=document.getElementById('emailBody').value; const r=await fetch('/api/outreach/email/send',{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ leadId, subject, body})}); const j=await r.json(); alert(j.success? 'Sent!':'Failed: '+j.error); loadLogs('EMAIL'); }
+async function sendBulkEmail(){ if(selectedLeads.size===0) return alert('Select leads'); if(!confirm(`Send email to ${selectedLeads.size} leads?`)) return; const subject=document.getElementById('emailSubject').value; const body=document.getElementById('emailBody').value; const r=await fetch('/api/outreach/email/bulk',{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ leadIds:Array.from(selectedLeads), subject, body})}); const j=await r.json(); alert(`Sent ${j.data.sent} / Failed ${j.data.failed}`); loadLogs('EMAIL'); }
+async function loadLogs(channel){ const r=await fetch(`/api/outreach/logs?channel=${channel}`); const j=await r.json(); document.getElementById('emailLogs').innerHTML=j.data.map(l=>`<div class="border-b py-1"><span class="font-medium">${l.lead?.companyName||l.lead?.email}</span> - ${l.status} - ${new Date(l.createdAt).toLocaleString()} ${l.error?`<span class="text-red-600">${l.error}</span>`:''}</div>`).join(''); }
+async function loadAllLogs(){ const r=await fetch('/api/outreach/logs'); const j=await r.json(); document.getElementById('allLogs').innerHTML=j.data.map(l=>`<div class="flex justify-between border-b py-1"><span>${l.lead?.companyName} [${l.channel}] ${l.status}</span><span class="opacity-60 text-xs">${new Date(l.createdAt).toLocaleString()}</span></div>`).join(''); }
+
+async function generateWhatsAppLinks(){ if(selectedLeads.size===0) return alert('Select leads'); const message=document.getElementById('waMessage').value; const r=await fetch('/api/outreach/whatsapp/generate',{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ leadIds:Array.from(selectedLeads), message})}); const j=await r.json(); document.getElementById('waResults').innerHTML=j.data.map(d=> d.error?`<div class="text-red-600 text-sm">${d.leadId} ${d.error}</div>`:`<div class="border p-2 rounded flex justify-between items-center"><div><div class="font-medium text-sm">${d.company||d.leadId}</div><div class="text-xs opacity-60">${d.phone} - ${d.message.slice(0,80)}...</div></div><a href="${d.waUrl}" target="_blank" class="px-3 py-1 bg-green-600 text-white rounded text-sm"><i class="fa-brands fa-whatsapp"></i> Open WhatsApp</a></div>`).join(''); }
+async function loadWaTemplates(){ const r=await fetch('/api/templates/whatsapp'); const j=await r.json(); document.getElementById('waTemplates').innerHTML=j.data.map(t=>`<div class="border p-2 rounded"><div class="font-medium text-sm">${t.name}</div><div class="text-xs">${t.message}</div></div>`).join(''); }
+function quickEmail(id){ selectedLeads=new Set([id]); showTab('outreach'); updateCounts(); }
+function quickWhatsApp(id){ selectedLeads=new Set([id]); showTab('whatsapp'); updateCounts(); }
+
+loadStats(); loadCampaigns(); loadLeads();
+setInterval(()=>{ loadStats(); loadCampaigns(); }, 4000);
+</script>
+</body></html>

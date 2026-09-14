@@ -1,0 +1,1 @@
+require('dotenv').config(); console.log('Worker polling for jobs - runs via server jobRunner'); setInterval(async ()=>{ const { PrismaClient }=require('@prisma/client'); const prisma=new PrismaClient(); const jobs=await prisma.job.findMany({ where:{ status:'QUEUED' }}); for(const j of jobs){ const { runCampaign }=require('./services/jobRunner'); runCampaign(j.id); } }, 5000);

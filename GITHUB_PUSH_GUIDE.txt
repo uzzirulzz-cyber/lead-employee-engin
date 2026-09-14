@@ -1,0 +1,33 @@
+
+PLAYBEAT LEADPULSE v3 - GITHUB PUSH GUIDE
+Repo: https://github.com/uzzirulzz-cyber/Playbeatpulselead
+
+SUPER ADMIN: admin@playbeat.live / playbeat1122
+NEON DB: postgresql://neondb_owner:npg_YfErWsIBK3D8@ep-royal-feather-aei4avdp-pooler.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require
+
+METHOD 1: GITHUB WEB (EASIEST - WORKS 100%)
+1. Go to https://github.com/uzzirulzz-cyber/Playbeatpulselead
+2. Click Add file -> Upload files
+3. Unzip PLAYBEAT-PULSE-LEAD-FINAL-GITHUB.zip on your computer
+4. Drag ALL files and folders into GitHub upload area
+5. Commit message: PLAYBEAT LEADPULSE v3 Complete - Super Admin admin@playbeat.live / playbeat1122 + Neon DB + 4 seats
+6. Click Commit changes
+
+METHOD 2: GIT COMMANDS (If you have git installed)
+cd /path/to/unzipped/folder
+git init
+git add .
+git commit -m "PLAYBEAT LEADPULSE v3 Complete"
+git branch -M main
+git remote add origin https://github.com/uzzirulzz-cyber/Playbeatpulselead.git
+git push -u origin main --force
+
+If push asks password, create PAT token: https://github.com/settings/tokens
+Then: git remote set-url origin https://YOUR_TOKEN@github.com/uzzirulzz-cyber/Playbeatpulselead.git
+git push -u origin main --force
+
+AFTER PUSH - SETUP NEON:
+npm install
+npx prisma migrate dev --name init
+node src/seed.js -> creates admin@playbeat.live / playbeat1122 in Neon
+npm start

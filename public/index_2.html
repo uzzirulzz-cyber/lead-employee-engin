@@ -1,0 +1,251 @@
+
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>PLAYBEAT LEADPULSE - Super Admin Dashboard</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Inter:wght@400;600;800&display=swap');
+body{ font-family:'Inter', sans-serif; }
+.orbitron{ font-family:'Orbitron', sans-serif; }
+</style>
+</head>
+<body class="bg-[#040812] text-white">
+<div id="loginOverlay" class="fixed inset-0 bg-[#040812] z-[100] flex items-center justify-center p-6">
+<div class="bg-[#080e26] border border-blue-900/30 rounded-2xl p-8 w-full max-w-96 space-y-4 shadow-[0_0_50px_rgba(0,102,255,0.2)]">
+<div class="text-center"><img src="/logo-playbeat.jpeg" class="w-20 h-20 mx-auto rounded-xl mb-3" alt="logo"><h1 class="orbitron font-black text-xl">PLAYBEAT<span class="text-yellow-400"> LEADPULSE</span></h1><p class="text-xs opacity-60">Super Admin Protected • Seat Router</p></div>
+<div id="setupSuperAdmin" class="hidden space-y-3"><p class="text-sm font-bold text-yellow-400">Setup Super Admin - First Time</p><input id="setupEmail" class="w-full bg-[#0a1430] border border-blue-800/30 p-2 rounded" placeholder="superadmin@playbeat.com"><input id="setupPass" type="password" class="w-full bg-[#0a1430] border border-blue-800/30 p-2 rounded" placeholder="Set password"><input id="setupName" class="w-full bg-[#0a1430] border border-blue-800/30 p-2 rounded" placeholder="Super Admin Name"><button onclick="setupSuperAdmin()" class="w-full bg-yellow-400 text-black py-2 rounded-full font-bold">Create Super Admin</button></div>
+<div id="loginForm" class="space-y-3"><input id="loginEmail" class="w-full bg-[#0a1430] border border-blue-800/30 p-3 rounded-xl" placeholder="Email"><input id="loginPass" type="password" class="w-full bg-[#0a1430] border border-blue-800/30 p-3 rounded-xl" placeholder="Password"><button onclick="login()" class="w-full bg-yellow-400 text-black py-3 rounded-full font-bold">Login to Dashboard</button><p class="text-xs opacity-50 text-center">Super Admin sets credentials. Employees login with assigned email/pass. Landing page password protected.</p></div>
+<div id="loginError" class="text-red-400 text-sm hidden"></div>
+<div class="text-center pt-4"><a href="/landing.html" class="text-xs opacity-60 hover:text-yellow-400">← View Landing Page</a></div>
+</div>
+</div>
+
+<div class="flex min-h-screen">
+<aside class="w-64 bg-[#080e26] border-r border-blue-900/20 p-4 space-y-4">
+<div class="flex items-center gap-2"><img src="/logo-playbeat.jpeg" class="w-8 h-8 rounded-lg"><div><div class="orbitron font-bold text-sm">PLAYBEAT<span class="text-yellow-400"> LEADPULSE</span></div><div class="text-[10px] opacity-50" id="userRoleDisplay">Super Admin</div></div></div>
+<nav class="space-y-1 text-sm">
+<a onclick="showTab('dashboard')" class="block py-2 px-3 rounded-xl hover:bg-blue-900/20 cursor-pointer"><i class="fa-solid fa-chart-line mr-2 text-blue-400"></i>Dashboard</a>
+<a onclick="showTab('campaigns')" class="block py-2 px-3 rounded-xl hover:bg-blue-900/20 cursor-pointer"><i class="fa-solid fa-bullseye mr-2 text-yellow-400"></i>Campaigns</a>
+<a onclick="showTab('leads')" class="block py-2 px-3 rounded-xl hover:bg-blue-900/20 cursor-pointer"><i class="fa-solid fa-database mr-2"></i>All Leads</a>
+<div class="opacity-50 text-[10px] mt-4 orbitron">TEAM & SEATS - SUPER ADMIN</div>
+<a onclick="showTab('employees')" class="block py-2 px-3 rounded-xl bg-yellow-400 text-black font-bold cursor-pointer"><i class="fa-solid fa-users mr-2"></i>Employees & Seats</a>
+<a onclick="showTab('router')" class="block py-2 px-3 rounded-xl bg-blue-900/30 border border-blue-700/30 cursor-pointer"><i class="fa-solid fa-route mr-2 text-yellow-400"></i>Lead Router</a>
+<div class="opacity-50 text-[10px] mt-4 orbitron">OUTREACH - SEAT BASED</div>
+<a onclick="showTab('outreach')" class="block py-2 px-3 rounded-xl hover:bg-blue-900/20 cursor-pointer"><i class="fa-solid fa-paper-plane mr-2"></i>Email</a>
+<a onclick="showTab('whatsapp')" class="block py-2 px-3 rounded-xl hover:bg-blue-900/20 cursor-pointer"><i class="fa-brands fa-whatsapp mr-2 text-green-400"></i>WhatsApp</a>
+<a onclick="showTab('calling')" class="block py-2 px-3 rounded-xl hover:bg-blue-900/20 cursor-pointer"><i class="fa-solid fa-phone mr-2 text-green-400"></i>Live Calling</a>
+<a onclick="showTab('sequences')" class="block py-2 px-3 rounded-xl hover:bg-blue-900/20 cursor-pointer"><i class="fa-solid fa-list-ol mr-2"></i>Sequences</a>
+<div class="opacity-50 text-[10px] mt-4 orbitron">SYSTEM</div>
+<a onclick="showTab('settings')" class="block py-2 px-3 rounded-xl hover:bg-blue-900/20 cursor-pointer"><i class="fa-solid fa-gear mr-2"></i>Settings / Landing</a>
+<a href="/landing.html" class="block py-2 px-3 rounded-xl hover:bg-blue-900/20 cursor-pointer"><i class="fa-solid fa-globe mr-2"></i>Landing Page</a>
+</nav>
+<div class="pt-10"><button onclick="logout()" class="text-xs opacity-60 hover:opacity-100"><i class="fa-solid fa-right-from-bracket mr-2"></i>Logout</button><div class="text-xs opacity-40 mt-2" id="currentUser"></div></div>
+</aside>
+
+<main class="flex-1 p-6 space-y-6 bg-[#040812]">
+
+<div id="tab-employees" class="space-y-6">
+<h1 class="text-2xl font-bold orbitron">Employees & Seats Management <span class="text-yellow-400">• Super Admin</span></h1>
+<div class="bg-blue-900/20 border border-blue-700/30 p-3 rounded-xl text-sm"><b class="text-yellow-400">Super Admin Authority:</b> Create employees, assign to Seat 1/2/3/4, set credentials, route leads. Seats: Seat One → Employee One, Seat Two → Employee Two, etc. Landing protected.</div>
+<div class="grid md:grid-cols-2 gap-6">
+<div class="bg-[#080e26] border border-blue-900/20 rounded-2xl p-4 space-y-3">
+<h3 class="font-bold orbitron">Create New Employee</h3>
+<input id="empName" class="w-full bg-[#0a1430] border border-blue-800/30 p-2 rounded-xl" placeholder="Employee Name">
+<input id="empEmail" class="w-full bg-[#0a1430] border border-blue-800/30 p-2 rounded-xl" placeholder="employee@playbeat.com">
+<input id="empPass" class="w-full bg-[#0a1430] border border-blue-800/30 p-2 rounded-xl" type="password" placeholder="Password">
+<div class="grid grid-cols-2 gap-2">
+<select id="empRole" class="bg-[#0a1430] border border-blue-800/30 p-2 rounded-xl"><option value="EMPLOYEE">Employee</option><option value="ADMIN">Admin</option></select>
+<select id="empSeat" class="bg-[#0a1430] border border-blue-800/30 p-2 rounded-xl"><option value="">Auto Seat</option><option value="1">Seat One (Seat 1)</option><option value="2">Seat Two (Seat 2)</option><option value="3">Seat Three (Seat 3)</option><option value="4">Seat Four (Seat 4)</option></select>
+</div>
+<button onclick="createEmployee()" class="w-full bg-yellow-400 text-black py-2 rounded-full font-bold">Create Employee & Assign Seat</button>
+</div>
+<div class="bg-[#080e26] border border-blue-900/20 rounded-2xl p-4">
+<h3 class="font-bold mb-3 orbitron">Seats — 4 Seats for 1000 Leads (250 each)</h3>
+<div id="seatsGrid" class="grid grid-cols-2 gap-3"></div>
+</div>
+</div>
+<div class="bg-[#080e26] border border-blue-900/20 rounded-2xl p-4">
+<h3 class="font-bold mb-3 orbitron">All Employees</h3>
+<div id="employeesList" class="space-y-2"></div>
+</div>
+</div>
+
+<div id="tab-router" class="hidden space-y-6">
+<h1 class="text-2xl font-bold orbitron">Lead Router — <span class="text-yellow-400">Distribute 1000 Leads to Seats</span></h1>
+<div class="bg-yellow-400/10 border border-yellow-400/20 p-3 rounded-xl text-sm">Router: 1000 leads → Seat 1 (250) → Employee One, Seat 2 (250) → Employee Two, Seat 3 (250) → Employee Three, Seat 4 (250) → Employee Four. Channels: WhatsApp, Email, Calling.</div>
+<div class="bg-[#080e26] border border-blue-900/20 rounded-2xl p-4 space-y-3">
+<div class="flex gap-2 flex-wrap">
+<select id="routeCampaign" class="bg-[#0a1430] border border-blue-800/30 p-2 rounded-xl"></select>
+<select id="routeStrategy" class="bg-[#0a1430] border border-blue-800/30 p-2 rounded-xl"><option value="round_robin">Round Robin (equal 250 each)</option><option value="score_based">Score Based (high score Seat 1)</option><option value="channel_split">Channel Split (Email Seat1, WhatsApp Seat3, Calling Seat4)</option></select>
+<select id="routeChannel" class="bg-[#0a1430] border border-blue-800/30 p-2 rounded-xl"><option value="">All Channels</option><option value="EMAIL">Email</option><option value="WHATSAPP">WhatsApp</option><option value="CALL">Calling</option></select>
+<button onclick="routeLeads()" class="px-6 py-2 bg-yellow-400 text-black rounded-full font-bold">Route Leads to Seats</button>
+</div>
+<div id="routeResult" class="text-sm text-yellow-400"></div>
+<div id="seatDistribution" class="grid grid-cols-4 gap-3 mt-4"></div>
+</div>
+</div>
+
+<div id="tab-dashboard" class="hidden space-y-6">
+<h1 class="text-2xl font-bold orbitron">Dashboard — <span class="text-yellow-400">PLAYBEAT LEADPULSE</span></h1>
+<div id="stats" class="grid grid-cols-6 gap-4"></div>
+<div id="statsSeats" class="grid grid-cols-4 gap-4"></div>
+<div class="bg-[#080e26] border border-blue-900/20 rounded-2xl p-4"><h3 class="font-bold orbitron mb-2">Architecture — SOLID + Seats + Router</h3><div class="text-xs opacity-70 space-y-1"><div>1. EnhancedDiscovery multi-tag x4 + Nominatim 10km radius = 1500-2000 URLs</div><div>2. Contact-page crawler finds /contact pages → 3x more emails</div><div>3. Validation + fingerprint SHA256 + scoring 0-100</div><div>4. Lead Router: 1000 leads → Seat 1/2/3/4 → Employee 1/2/3/4 (250 each)</div><div>5. Outreach per seat: Email (warmup) + WhatsApp wa.me + Calling real-time Socket.io</div></div></div>
+</div>
+
+<div id="tab-campaigns" class="hidden"><h1 class="text-2xl font-bold orbitron">Campaigns</h1><div class="bg-[#080e26] border border-blue-900/20 rounded-2xl p-4 space-y-2"><div class="flex gap-2 flex-wrap"><input id="campName" class="bg-[#0a1430] border border-blue-800/30 p-2 rounded-xl flex-1" placeholder="Pakistan Real Estate 1000"><input id="campIndustry" class="bg-[#0a1430] border border-blue-800/30 p-2 rounded-xl" value="Real Estate"><input id="campCountry" class="bg-[#0a1430] border border-blue-800/30 p-2 rounded-xl" value="Pakistan"><input id="campCity" class="bg-[#0a1430] border border-blue-800/30 p-2 rounded-xl" placeholder="City"><input id="campTarget" type="number" class="bg-[#0a1430] border border-blue-800/30 p-2 rounded-xl w-24" value="1000"><button onclick="createCampaign()" class="px-4 bg-yellow-400 text-black rounded-full font-bold">Create</button></div><div id="campaignsList" class="mt-4 space-y-2"></div></div></div>
+
+<div id="tab-leads" class="hidden space-y-4">
+<h1 class="text-2xl font-bold orbitron">All Leads — <span class="text-yellow-400">Routed to Seats</span></h1>
+<div class="bg-[#080e26] border border-blue-900/20 rounded-2xl p-4">
+<div class="flex gap-2 mb-3 flex-wrap"><input id="search" placeholder="Search" class="bg-[#0a1430] border border-blue-800/30 p-2 rounded-xl w-64" oninput="loadLeads()"><select id="filterSeat" class="bg-[#0a1430] border border-blue-800/30 p-2 rounded-xl" onchange="loadLeads()"><option value="">All Seats</option><option value="1">Seat 1</option><option value="2">Seat 2</option><option value="3">Seat 3</option><option value="4">Seat 4</option></select><label class="flex items-center gap-1 text-sm"><input type="checkbox" id="myLeads" onchange="loadLeads()"> My Leads Only</label><button onclick="loadLeads()" class="px-3 border border-blue-800/30 rounded-xl">Refresh</button><button onclick="exportLeads()" class="px-3 bg-blue-900/30 rounded-xl">Export CSV</button></div>
+<div class="overflow-auto"><table class="w-full text-sm"><thead class="bg-[#0a1430]"><tr><th class="p-2">Score</th><th class="p-2 text-left">Company</th><th>Contact</th><th>Assigned To</th><th>Seat</th><th>Actions</th></tr></thead><tbody id="leadsBody"></tbody></table></div>
+</div>
+</div>
+
+<div id="tab-calling" class="hidden space-y-4">
+<h1 class="text-2xl font-bold orbitron"><i class="fa-solid fa-phone text-green-400"></i> Live Calling Center — <span class="text-yellow-400">Seat Based</span></h1>
+<div class="grid md:grid-cols-3 gap-6">
+<div class="bg-[#080e26] border border-blue-900/20 rounded-2xl p-4 space-y-3">
+<input id="dialNumber" class="w-full bg-[#0a1430] border-2 border-blue-800/30 p-3 rounded-xl text-xl text-center font-mono" placeholder="+92...">
+<div class="grid grid-cols-3 gap-2"><button onclick="pressKey('1')" class="bg-[#0a1430] border border-blue-800/20 rounded-xl py-2">1</button><button onclick="pressKey('2')" class="bg-[#0a1430] border border-blue-800/20 rounded-xl py-2">2</button><button onclick="pressKey('3')" class="bg-[#0a1430] border border-blue-800/20 rounded-xl py-2">3</button><button onclick="pressKey('4')" class="bg-[#0a1430] border border-blue-800/20 rounded-xl py-2">4</button><button onclick="pressKey('5')" class="bg-[#0a1430] border border-blue-800/20 rounded-xl py-2">5</button><button onclick="pressKey('6')" class="bg-[#0a1430] border border-blue-800/20 rounded-xl py-2">6</button><button onclick="pressKey('7')" class="bg-[#0a1430] border border-blue-800/20 rounded-xl py-2">7</button><button onclick="pressKey('8')" class="bg-[#0a1430] border border-blue-800/20 rounded-xl py-2">8</button><button onclick="pressKey('9')" class="bg-[#0a1430] border border-blue-800/20 rounded-xl py-2">9</button><button onclick="pressKey('*')" class="bg-[#0a1430] border border-blue-800/20 rounded-xl py-2">*</button><button onclick="pressKey('0')" class="bg-[#0a1430] border border-blue-800/20 rounded-xl py-2">0</button><button onclick="pressKey('#')" class="bg-[#0a1430] border border-blue-800/20 rounded-xl py-2">#</button></div>
+<button onclick="makeCall()" class="w-full bg-green-600 text-white py-3 rounded-full font-bold"><i class="fa-solid fa-phone mr-2"></i>Call Lead</button>
+<div id="activeCall" class="hidden border-2 border-green-500 rounded-2xl p-4 bg-green-900/20 text-center"><div id="callStatus" class="orbitron">RINGING...</div><div id="callTimer" class="text-2xl font-mono">00:00</div><div id="callTo" class="text-xs opacity-60"></div><button onclick="hangupCall()" class="mt-2 px-6 py-2 bg-red-600 text-white rounded-full">Hangup</button></div>
+<div class="text-xs opacity-50" id="providerStatus"></div>
+</div>
+<div class="md:col-span-2 bg-[#080e26] border border-blue-900/20 rounded-2xl p-4"><h3 class="font-bold orbitron mb-2">My Assigned Leads to Call — Seat Based</h3><div id="myCallLeads" class="space-y-2 max-h-96 overflow-auto"></div></div>
+</div>
+</div>
+
+<div id="tab-outreach" class="hidden"><h1 class="text-2xl font-bold orbitron">Email Outreach</h1><div class="bg-[#080e26] border border-blue-900/20 rounded-2xl p-4"><textarea id="emailBody" class="w-full bg-[#0a1430] border border-blue-800/30 p-3 rounded-xl h-32">Hi {{companyName}}, found your business in {{city}} - we help {{industry}} get more clients...</textarea><div class="text-xs opacity-60 mt-2">Variables: {{companyName}} {{city}} {{industry}} {{website}} — Seat based, only your leads</div><button onclick="sendBulkEmail()" class="mt-3 px-6 py-2 bg-yellow-400 text-black rounded-full font-bold">Send to My Seat Leads</button></div><div id="emailLogs" class="mt-4 bg-[#080e26] border border-blue-900/20 rounded-2xl p-4 text-sm"></div></div>
+<div id="tab-whatsapp" class="hidden"><h1 class="text-2xl font-bold orbitron">WhatsApp Center</h1><div class="bg-[#080e26] border border-blue-900/20 rounded-2xl p-4"><textarea id="waMessage" class="w-full bg-[#0a1430] border border-blue-800/30 p-3 rounded-xl h-24">Hi {{companyName}}! I saw your business in {{city}} - we help {{industry}} businesses get more leads. Open to a quick chat?</textarea><button onclick="generateWhatsApp()" class="mt-2 px-6 py-2 bg-green-600 text-white rounded-full font-bold">Generate wa.me Links</button></div><div id="waResults" class="mt-4 space-y-2"></div></div>
+<div id="tab-sequences" class="hidden"><h1 class="text-2xl font-bold orbitron">Sequences — 3-day Follow-up</h1><div class="bg-[#080e26] border border-blue-900/20 rounded-2xl p-4 text-sm">Step0 immediate email, Step1 after 3 days, Step2 WhatsApp after 2 days, Step3 last follow-up after 5 days. Cron every 5 min.</div></div>
+<div id="tab-settings" class="hidden space-y-4">
+<h1 class="text-2xl font-bold orbitron">Settings — Landing Page & Logo <span class="text-yellow-400">(Super Admin)</span></h1>
+<div class="bg-[#080e26] border border-blue-900/20 rounded-2xl p-4 space-y-3">
+<p class="text-sm opacity-60">Logo and hero from your uploaded images. Protected by Super Admin.</p>
+<div class="grid md:grid-cols-2 gap-4">
+<div><label class="text-xs opacity-60">Logo URL</label><input id="logoUrl" class="w-full bg-[#0a1430] border border-blue-800/30 p-2 rounded-xl" value="/logo-playbeat.jpeg"></div>
+<div><label class="text-xs opacity-60">Hero Image URL</label><input id="heroUrl" class="w-full bg-[#0a1430] border border-blue-800/30 p-2 rounded-xl" value="/landing-reference.jpeg"></div>
+</div>
+<input id="landingTitle" class="w-full bg-[#0a1430] border border-blue-800/30 p-2 rounded-xl" value="PLAYBEAT LEADPULSE">
+<input id="landingSubtitle" class="w-full bg-[#0a1430] border border-blue-800/30 p-2 rounded-xl" value="YOUR WORLD OF LEAD POSSIBILITIES">
+<label class="flex items-center gap-2 text-sm"><input type="checkbox" id="landingProtected" checked> Password Protected by Super Admin</label>
+<button onclick="saveLanding()" class="px-6 py-2 bg-yellow-400 text-black rounded-full font-bold">Save Landing Page</button>
+<div id="landingPreview" class="mt-4 border border-blue-900/20 rounded-2xl p-6 text-center bg-[#0a1430]"><img src="/logo-playbeat.jpeg" class="w-20 h-20 mx-auto rounded-xl mb-2"><h2 id="previewTitle" class="orbitron font-bold text-xl">PLAYBEAT LEADPULSE</h2><p id="previewSubtitle" class="opacity-60">YOUR WORLD OF LEAD POSSIBILITIES</p></div>
+</div>
+</div>
+
+</main>
+</div>
+
+<script>
+let token=localStorage.getItem('token');
+let currentUser=null;
+let socket=null;
+let selectedLeads=new Set();
+
+async function checkAuth(){
+  if(!token){
+    document.getElementById('loginOverlay').classList.remove('hidden');
+    document.getElementById('loginForm').classList.add('hidden');
+    document.getElementById('setupSuperAdmin').classList.remove('hidden');
+    return;
+  }
+  try{
+    const r=await fetch('/api/seats', { headers:{ Authorization:`Bearer ${token}` }});
+    if(!r.ok) throw new Error('Invalid');
+    const payload=JSON.parse(atob(token.split('.')[1]));
+    currentUser=payload;
+    document.getElementById('loginOverlay').classList.add('hidden');
+    document.getElementById('currentUser').innerText=payload.email+' ('+payload.role+')';
+    document.getElementById('userRoleDisplay').innerText=payload.role + (payload.seatId?' - Seat Assigned':' - Super Admin');
+    initSocket(); loadAll();
+  }catch(e){ localStorage.removeItem('token'); token=null; document.getElementById('loginOverlay').classList.remove('hidden'); }
+}
+async function setupSuperAdmin(){
+  const email=document.getElementById('setupEmail').value;
+  const password=document.getElementById('setupPass').value;
+  const name=document.getElementById('setupName').value;
+  const r=await fetch('/api/auth/setup-super-admin',{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ email,password,name })});
+  const j=await r.json();
+  if(j.success){ token=j.data.token; localStorage.setItem('token', token); checkAuth(); } else { document.getElementById('loginError').innerText=j.error; document.getElementById('loginError').classList.remove('hidden'); }
+}
+async function login(){
+  const email=document.getElementById('loginEmail').value;
+  const password=document.getElementById('loginPass').value;
+  const r=await fetch('/api/auth/login',{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ email,password })});
+  const j=await r.json();
+  if(j.success){ token=j.data.token; localStorage.setItem('token', token); checkAuth(); } else { document.getElementById('loginError').innerText=j.error; document.getElementById('loginError').classList.remove('hidden'); document.getElementById('loginForm').classList.remove('hidden'); document.getElementById('setupSuperAdmin').classList.add('hidden'); }
+}
+function logout(){ localStorage.removeItem('token'); location.reload(); }
+function showTab(name){ document.querySelectorAll('[id^=tab-]').forEach(el=>el.classList.add('hidden')); document.getElementById('tab-'+name).classList.remove('hidden'); if(name==='employees'){ loadEmployees(); loadSeats(); } if(name==='router'){ loadCampaignsForRouter(); loadSeats(); } if(name==='leads'){ loadLeads(); } if(name==='dashboard'){ loadStats(); loadCampaigns(); } if(name==='settings'){ loadLanding(); } if(name==='calling'){ loadMyCallLeads(); loadProvider(); } }
+
+async function loadSeats(){
+  const r=await fetch('/api/seats',{ headers:{ Authorization:`Bearer ${token}` }}); const j=await r.json();
+  document.getElementById('seatsGrid').innerHTML=j.data.map(s=>`<div class="border rounded-2xl p-3 ${s.user?'bg-green-900/20 border-green-700/30':'bg-[#0a1430] border-blue-900/20'}"><div class="orbitron font-bold text-sm">Seat ${s.seatNumber} - ${s.name}</div><div class="text-sm">${s.user? s.user.name+' ('+s.user.email+')' : '<span class=opacity-50>Available - No Employee</span>'}</div><div class="text-xs opacity-60">Max ${s.maxLeads} • ${s.status} • Leads: ${s._count?.leads||0}</div></div>`).join('');
+}
+async function loadEmployees(){
+  const r=await fetch('/api/users',{ headers:{ Authorization:`Bearer ${token}` }}); const j=await r.json();
+  document.getElementById('employeesList').innerHTML=j.data.map(u=>`<div class="flex justify-between border-b border-blue-900/20 py-2 text-sm"><div><b>${u.name}</b> ${u.email} <span class="px-2 py-1 rounded-full text-[10px] ${u.role==='SUPER_ADMIN'?'bg-red-900/30 text-red-400':'bg-blue-900/30'}">${u.role}</span> ${u.seat? 'Seat '+u.seat.seatNumber:''}</div><div>${u.isActive?'Active':'Disabled'} <button onclick="deleteUser('${u.id}')" class="ml-2 text-red-400">Delete</button></div></div>`).join('');
+}
+async function createEmployee(){
+  const name=document.getElementById('empName').value;
+  const email=document.getElementById('empEmail').value;
+  const password=document.getElementById('empPass').value;
+  const role=document.getElementById('empRole').value;
+  const seatNumber=document.getElementById('empSeat').value;
+  const r=await fetch('/api/users',{ method:'POST', headers:{ Authorization:`Bearer ${token}`, 'Content-Type':'application/json'}, body:JSON.stringify({ name,email,password,role,seatNumber })}); 
+  const j=await r.json();
+  if(j.success){ alert('Employee created and assigned to Seat '+seatNumber); loadEmployees(); loadSeats(); } else alert(j.error);
+}
+async function deleteUser(id){ if(!confirm('Delete employee?')) return; const r=await fetch(`/api/users/${id}`,{ method:'DELETE', headers:{ Authorization:`Bearer ${token}` }}); const j=await r.json(); if(j.success) loadEmployees(); else alert(j.error); }
+
+async function loadCampaignsForRouter(){
+  const r=await fetch('/api/campaigns',{ headers:{ Authorization:`Bearer ${token}` }}); const j=await r.json();
+  document.getElementById('routeCampaign').innerHTML=j.data.map(c=>`<option value="${c.id}">${c.name} - ${c.progress}/${c.targetCount}</option>`).join('');
+}
+async function routeLeads(){
+  const campaignId=document.getElementById('routeCampaign').value;
+  const strategy=document.getElementById('routeStrategy').value;
+  const channel=document.getElementById('routeChannel').value;
+  const r=await fetch('/api/leads/route',{ method:'POST', headers:{ Authorization:`Bearer ${token}`, 'Content-Type':'application/json'}, body:JSON.stringify({ campaignId, strategy, channel })}); 
+  const j=await r.json();
+  if(j.success){
+    document.getElementById('routeResult').innerHTML=`Routed ${j.data.total} leads to ${j.data.seats.length} seats`;
+    document.getElementById('seatDistribution').innerHTML=j.data.seats.map(s=>`<div class="bg-[#0a1430] border border-blue-800/30 rounded-xl p-3 text-sm"><b class="orbitron">Seat ${s.seatNumber}</b> ${s.name}<br>${s.employee}<br>Max ${s.maxLeads}</div>`).join('');
+    loadSeats();
+  } else alert(j.error);
+}
+
+async function loadStats(){
+  const r=await fetch('/api/stats',{ headers:{ Authorization:`Bearer ${token}` }}); const j=await r.json();
+  document.getElementById('stats').innerHTML=`<div class="bg-[#080e26] border border-blue-900/20 rounded-2xl p-4"><div class="text-xs opacity-60">Total Leads</div><div class="text-2xl font-bold">${j.data.total}</div></div><div class="bg-[#080e26] border border-blue-900/20 rounded-2xl p-4"><div class="text-xs opacity-60">Verified</div><div class="text-2xl font-bold">${j.data.verified}</div></div><div class="bg-[#080e26] border border-blue-900/20 rounded-2xl p-4"><div class="text-xs opacity-60">WhatsApp</div><div class="text-2xl font-bold">${j.data.whatsapp}</div></div><div class="bg-[#080e26] border border-blue-900/20 rounded-2xl p-4"><div class="text-xs opacity-60">Phone</div><div class="text-2xl font-bold">${j.data.phone}</div></div><div class="bg-[#080e26] border border-blue-900/20 rounded-2xl p-4"><div class="text-xs opacity-60">Calls</div><div class="text-2xl font-bold">${j.data.calls}</div></div><div class="bg-[#080e26] border border-blue-900/20 rounded-2xl p-4"><div class="text-xs opacity-60">Today</div><div class="text-2xl font-bold">${j.data.today}</div></div>`;
+  if(j.data.seats) document.getElementById('statsSeats').innerHTML=j.data.seats.map(s=>`<div class="bg-[#080e26] border border-blue-900/20 rounded-2xl p-3"><div class="text-xs opacity-60">Seat ${s.seatNumber} ${s.name}</div><div class="font-bold">${s.user?.name||'Empty'}</div><div class="text-sm">${s._count.leads} leads</div></div>`).join('');
+}
+async function loadLeads(){
+  const search=document.getElementById('search')?.value||'';
+  const seatFilter=document.getElementById('filterSeat')?.value||'';
+  const myLeads=document.getElementById('myLeads')?.checked;
+  const r=await fetch(`/api/leads?search=${search}&limit=100&myLeads=${myLeads||false}`,{ headers:{ Authorization:`Bearer ${token}` }}); const j=await r.json();
+  document.getElementById('leadsBody').innerHTML=j.data.leads.map(l=>`<tr class="border-t border-blue-900/20"><td class="p-2"><span class="px-2 py-1 rounded-full text-xs ${l.leadScore>=90?'bg-green-900/30 text-green-400':'bg-blue-900/30'}">${l.leadScore}</span></td><td class="p-2"><div class="font-medium">${l.companyName||l.domain}</div><div class="text-xs opacity-60">${l.email||''} ${l.phoneNormalized||''}</div></td><td class="p-2"><div class="flex gap-1 text-xs"><span class="${l.email?'text-green-400':''}">${l.email?'Email':''}</span><span class="${l.whatsappDetected?'text-green-400':''}">${l.whatsappDetected?'WA':''}</span><span>${l.phoneNormalized?'Call':''}</span></div></td><td class="p-2">${l.assignedTo?.name||'<span class=text-xs opacity-50>Unassigned</span>'}</td><td class="p-2">${l.assignedSeat? 'Seat '+l.assignedSeat.seatNumber:''}</td><td class="p-2"><button onclick="callLead('${l.id}')" class="text-xs px-2 py-1 border border-blue-800/30 rounded-full">Call</button></td></tr>`).join('');
+}
+async function loadCampaigns(){ const r=await fetch('/api/campaigns',{ headers:{ Authorization:`Bearer ${token}` }}); const j=await r.json(); document.getElementById('campaignsList').innerHTML=j.data.map(c=>`<div class="bg-[#0a1430] border border-blue-900/20 rounded-xl p-3 flex justify-between"><div><b>${c.name}</b> <span class="text-xs opacity-60">${c.industry} ${c.progress}/${c.targetCount} ${c.status}</span><div class="w-48 h-2 bg-[#040812] rounded mt-1"><div class="h-2 bg-yellow-400 rounded" style="width:${Math.min(100,(c.progress/c.targetCount)*100)}%"></div></div></div><button onclick="startCampaign('${c.id}')" class="px-3 py-1 bg-yellow-400 text-black rounded-full text-xs">Start</button></div>`).join(''); }
+async function createCampaign(){ const name=document.getElementById('campName').value; const industry=document.getElementById('campIndustry').value; const country=document.getElementById('campCountry').value; const city=document.getElementById('campCity').value; const targetCount=document.getElementById('campTarget').value; const r=await fetch('/api/campaigns',{ method:'POST', headers:{ Authorization:`Bearer ${token}`, 'Content-Type':'application/json'}, body:JSON.stringify({ name,industry,country,city,targetCount })}); const j=await r.json(); if(j.success) loadCampaigns(); }
+async function startCampaign(id){ const r=await fetch(`/api/campaigns/${id}/start`,{ method:'POST', headers:{ Authorization:`Bearer ${token}` }}); const j=await r.json(); alert('Started'); }
+function initSocket(){ socket=io(); socket.on('connect',()=>{ socket.emit('join',{ userId: currentUser.id, seatNumber: currentUser.seatId }); }); socket.on('call:initiated', (d)=>{ console.log('call initiated',d); }); }
+async function loadMyCallLeads(){ const r=await fetch('/api/leads?myLeads=true&limit=50',{ headers:{ Authorization:`Bearer ${token}` }}); const j=await r.json(); document.getElementById('myCallLeads').innerHTML=j.data.leads.map(l=>`<div class="flex justify-between items-center border border-blue-900/20 p-3 rounded-xl"><div><div class="font-bold">${l.companyName||l.domain}</div><div class="text-xs font-mono opacity-60">${l.phoneNormalized||l.phoneRaw}</div></div><button onclick="callLead('${l.id}')" class="px-4 py-2 bg-green-600 text-white rounded-full"><i class="fa-solid fa-phone"></i></button></div>`).join(''); }
+async function loadProvider(){ const r=await fetch('/api/calls/provider/status',{ headers:{ Authorization:`Bearer ${token}` }}); const j=await r.json(); document.getElementById('providerStatus').innerText=j.data.provider+' - '+j.data.mode; }
+function pressKey(k){ document.getElementById('dialNumber').value+=k; }
+async function callLead(leadId){ const r=await fetch('/api/calls/make',{ method:'POST', headers:{ Authorization:`Bearer ${token}`, 'Content-Type':'application/json'}, body:JSON.stringify({ leadId })}); const j=await r.json(); if(j.success){ document.getElementById('activeCall').classList.remove('hidden'); document.getElementById('callTo').innerText=j.data.callLogId; startTimer(); } else alert(j.error); }
+let timerInterval=null, seconds=0;
+function startTimer(){ seconds=0; clearInterval(timerInterval); timerInterval=setInterval(()=>{ seconds++; const m=String(Math.floor(seconds/60)).padStart(2,'0'); const s=String(seconds%60).padStart(2,'0'); document.getElementById('callTimer').innerText=`${m}:${s}`; },1000); }
+async function hangupCall(){ const callId=document.getElementById('callTo').innerText; // simplified
+  document.getElementById('activeCall').classList.add('hidden'); clearInterval(timerInterval);
+}
+async function saveLanding(){ const logoUrl=document.getElementById('logoUrl').value; const heroImageUrl=document.getElementById('heroUrl').value; const title=document.getElementById('landingTitle').value; const subtitle=document.getElementById('landingSubtitle').value; const isProtected=document.getElementById('landingProtected').checked; const r=await fetch('/api/landing',{ method:'POST', headers:{ Authorization:`Bearer ${token}`, 'Content-Type':'application/json'}, body:JSON.stringify({ logoUrl, heroImageUrl, title, subtitle, protected: isProtected })}); const j=await r.json(); if(j.success) alert('Landing saved'); }
+async function loadLanding(){ const r=await fetch('/api/landing',{ headers:{ Authorization:`Bearer ${token}` }}); const j=await r.json(); if(j.data){ document.getElementById('logoUrl').value=j.data.logoUrl||''; document.getElementById('heroUrl').value=j.data.heroImageUrl||''; } }
+async function loadAll(){ loadStats(); loadSeats(); loadEmployees(); loadCampaignsForRouter(); loadCampaigns(); loadLeads(); }
+
+checkAuth();
+</script>
+</body></html>

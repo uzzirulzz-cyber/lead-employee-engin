@@ -1,0 +1,1 @@
+class BaseAdapter{ constructor(){ this.name='base'; } async discover(){ return []; } } module.exports=BaseAdapter;

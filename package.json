@@ -1,0 +1,27 @@
+
+{
+  "name": "leadforge-express-v2",
+  "version": "2.0.0",
+  "description": "Solid LeadForge - FREE 1000+ leads + Email & WhatsApp outreach inside dashboard",
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "nodemon src/server.js",
+    "start": "node src/server.js",
+    "worker": "node src/worker.js",
+    "migrate": "prisma migrate dev",
+    "seed": "node prisma/seed.js"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.14.0",
+    "axios": "^1.7.2",
+    "cheerio": "^1.0.0-rc.12",
+    "cors": "^2.8.5",
+    "csv-stringify": "^6.4.6",
+    "express": "^4.19.2",
+    "nodemailer": "^6.9.13",
+    "p-limit": "^4.0.0",
+    "prisma": "^5.14.0",
+    "node-cron": "^3.0.3"
+  },
+  "devDependencies": { "nodemon": "^3.1.0" }
+}

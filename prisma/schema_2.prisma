@@ -1,0 +1,261 @@
+
+generator client { provider = "prisma-client-js" }
+datasource db { provider = "postgresql" url = env("DATABASE_URL") }
+
+enum CampaignStatus { DRAFT QUEUED DISCOVERING FETCHING EXTRACTING ENRICHING VALIDATING COMPLETED PAUSED SOURCE_EXHAUSTED FAILED }
+enum EmailStatus { UNKNOWN VALID INVALID DISPOSABLE ROLE_ACCOUNT }
+enum OutreachStatus { PENDING SENT DELIVERED OPENED BOUNCED FAILED REPLIED SKIPPED }
+enum Channel { EMAIL WHATSAPP PHONE CALL }
+enum SequenceStatus { ACTIVE PAUSED COMPLETED }
+enum CallStatus { INITIATED RINGING IN_PROGRESS COMPLETED FAILED BUSY NO_ANSWER CANCELLED }
+enum CallDirection { OUTBOUND INBOUND }
+enum UserRole { SUPER_ADMIN ADMIN EMPLOYEE }
+enum SeatStatus { AVAILABLE BUSY OFFLINE }
+
+model Campaign {
+  id String @id @default(cuid())
+  name String
+  industry String?
+  country String?
+  city String?
+  keywords String[]
+  targetCount Int @default(1000)
+  status CampaignStatus @default(DRAFT)
+  progress Int @default(0)
+  discovered Int @default(0)
+  extracted Int @default(0)
+  valid Int @default(0)
+  duplicates Int @default(0)
+  invalid Int @default(0)
+  enriched Int @default(0)
+  currentStage String @default("DRAFT")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  jobs Job[]
+  leads Lead[]
+  sources DiscoverySource[]
+  outreachLogs OutreachLog[]
+  sequences Sequence[]
+  calls CallLog[]
+}
+
+model Job {
+  id String @id @default(cuid())
+  campaignId String
+  campaign Campaign @relation(fields: [campaignId], references: [id])
+  status CampaignStatus @default(QUEUED)
+  stage String @default("DISCOVERY")
+  batchIndex Int @default(0)
+  batchSize Int @default(50)
+  error String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model DiscoverySource {
+  id String @id @default(cuid())
+  campaignId String
+  campaign Campaign @relation(fields: [campaignId], references: [id])
+  source String
+  sourceUrl String
+  query String?
+  processed Boolean @default(false)
+  enriched Boolean @default(false)
+  discoveredAt DateTime @default(now())
+}
+
+model Lead {
+  id String @id @default(cuid())
+  campaignId String?
+  campaign Campaign? @relation(fields: [campaignId], references: [id])
+  companyName String?
+  industry String?
+  category String?
+  website String?
+  domain String?
+  email String?
+  emailStatus EmailStatus @default(UNKNOWN)
+  emailConfidence Int @default(0)
+  phoneRaw String?
+  phoneNormalized String?
+  whatsappRaw String?
+  whatsappNormalized String?
+  whatsappDetected Boolean @default(false)
+  whatsappUrl String?
+  whatsappSourceUrl String?
+  country String?
+  city String?
+  address String?
+  linkedinUrl String?
+  facebookUrl String?
+  instagramUrl String?
+  source String?
+  sourceUrl String?
+  sourceCount Int @default(1)
+  leadScore Int @default(0)
+  fingerprint String @unique
+  firstSeen DateTime @default(now())
+  lastSeen DateTime @default(now())
+  createdAt DateTime @default(now())
+  outreachLogs OutreachLog[]
+  sequenceEnrollments SequenceEnrollment[]
+  calls CallLog[]
+  assignments LeadAssignment[]
+  tags String[]
+  unsubscribed Boolean @default(false)
+  bounced Boolean @default(false)
+  lastContactedAt DateTime?
+  assignedToId String?
+  assignedTo User? @relation(fields: [assignedToId], references: [id])
+  assignedSeatId String?
+  assignedSeat Seat? @relation(fields: [assignedSeatId], references: [id])
+}
+
+model User {
+  id String @id @default(cuid())
+  email String @unique
+  passwordHash String
+  name String
+  role UserRole @default(EMPLOYEE)
+  seatId String? @unique
+  seat Seat? @relation(fields: [seatId], references: [id])
+  isActive Boolean @default(true)
+  createdById String?
+  createdBy User? @relation("UserCreatedBy", fields: [createdById], references: [id])
+  createdUsers User[] @relation("UserCreatedBy")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  assignedLeads Lead[]
+  callLogs CallLog[]
+  outreachLogs OutreachLog[]
+  leadAssignments LeadAssignment[]
+}
+
+model Seat {
+  id String @id @default(cuid())
+  seatNumber Int @unique
+  name String
+  status SeatStatus @default(AVAILABLE)
+  user User?
+  leads Lead[]
+  assignments LeadAssignment[]
+  maxLeads Int @default(250)
+  createdAt DateTime @default(now())
+}
+
+model LeadAssignment {
+  id String @id @default(cuid())
+  leadId String
+  lead Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  seatId String?
+  seat Seat? @relation(fields: [seatId], references: [id])
+  campaignId String?
+  channel Channel?
+  assignedAt DateTime @default(now())
+  assignedById String?
+}
+
+model EmailTemplate { id String @id @default(cuid()) name String subject String body String variables String[] createdAt DateTime @default(now()) }
+model WhatsAppTemplate { id String @id @default(cuid()) name String message String variables String[] createdAt DateTime @default(now()) }
+
+model OutreachLog {
+  id String @id @default(cuid())
+  campaignId String?
+  campaign Campaign? @relation(fields: [campaignId], references: [id])
+  leadId String
+  lead Lead @relation(fields: [leadId], references: [id])
+  userId String?
+  user User? @relation(fields: [userId], references: [id])
+  channel Channel
+  sequenceId String?
+  sequence Sequence? @relation(fields: [sequenceId], references: [id])
+  stepIndex Int @default(0)
+  templateId String?
+  subject String?
+  message String?
+  status OutreachStatus @default(PENDING)
+  sentAt DateTime?
+  error String?
+  createdAt DateTime @default(now())
+}
+
+model Sequence {
+  id String @id @default(cuid())
+  name String
+  campaignId String?
+  campaign Campaign? @relation(fields: [campaignId], references: [id])
+  status SequenceStatus @default(ACTIVE)
+  steps SequenceStep[]
+  enrollments SequenceEnrollment[]
+  outreachLogs OutreachLog[]
+  totalEnrolled Int @default(0)
+  totalCompleted Int @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SequenceStep {
+  id String @id @default(cuid())
+  sequenceId String
+  sequence Sequence @relation(fields: [sequenceId], references: [id], onDelete: Cascade)
+  stepIndex Int
+  channel Channel @default(EMAIL)
+  delayDays Int @default(0)
+  delayHours Int @default(0)
+  subject String?
+  templateId String?
+  body String?
+  createdAt DateTime @default(now())
+}
+
+model SequenceEnrollment {
+  id String @id @default(cuid())
+  sequenceId String
+  sequence Sequence @relation(fields: [sequenceId], references: [id], onDelete: Cascade)
+  leadId String
+  lead Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  currentStep Int @default(0)
+  nextSendAt DateTime?
+  status SequenceStatus @default(ACTIVE)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@unique([sequenceId, leadId])
+}
+
+model SmtpWarmup {
+  id String @id @default(cuid())
+  email String @unique
+  day Int @default(1)
+  dailyLimit Int @default(20)
+  sentToday Int @default(0)
+  lastReset DateTime @default(now())
+  status String @default("WARMING")
+  createdAt DateTime @default(now())
+}
+
+model CallLog {
+  id String @id @default(cuid())
+  campaignId String?
+  campaign Campaign? @relation(fields: [campaignId], references: [id])
+  leadId String?
+  lead Lead? @relation(fields: [leadId], references: [id])
+  userId String?
+  user User? @relation(fields: [userId], references: [id])
+  direction CallDirection
+  fromNumber String?
+  toNumber String
+  status CallStatus @default(INITIATED)
+  duration Int @default(0)
+  provider String @default("twilio")
+  providerCallId String?
+  recordingUrl String?
+  notes String?
+  answeredAt DateTime?
+  endedAt DateTime?
+  createdAt DateTime @default(now())
+}
+
+model SystemSetting { id String @id @default(cuid()) key String @unique value Json }
+model LandingPage { id String @id @default(cuid()) logoUrl String? heroImageUrl String? title String @default("PLAYBEAT LEADPULSE") subtitle String? protected Boolean @default(true) updatedAt DateTime @updatedAt }
